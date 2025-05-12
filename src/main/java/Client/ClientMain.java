@@ -4,32 +4,54 @@
  */
 package Client;
 
+import gui.Main;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import javax.swing.SwingUtilities;
+import gui.Main;
+import gui.WaitingFrame;
 
+import javax.swing.*;
+import java.io.*;
+import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 /**
  *
  * @author sozcu
  */
 public class ClientMain {
+       public static void main(String[] args) {
+        try {
+            Socket socket = new Socket("localhost", 5000); // Change to actual IP in deployment
+            PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-    public static void main(String[] args) {
-        String serverIp = "51.20.104.21"; // örneğin: "3.122.45.67"
-        int port = 5000;
+            WaitingFrame waitingFrame = new WaitingFrame();
+            waitingFrame.setVisible(true);
 
-       try (Socket socket = new Socket(serverIp, port);
-             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-             PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+            String msg;
+            int playerNo = -1;
+            while ((msg = in.readLine()) != null) {
+                if (msg.startsWith("WAITING")) {
+                    playerNo = Integer.parseInt(msg.split(" ")[1]);
+                    // Remain on waiting screen until START received
+                } else if (msg.startsWith("START")) {
+                    playerNo = Integer.parseInt(msg.split(" ")[1]);
+                    break;
+                }
+            }
 
-            // Sunucudan gelen karşılama mesajı
-            String response = in.readLine();
-            System.out.println("Server said: " + response);
-
-            // (İsteğe bağlı) Sunucuya mesaj gönder
-            // out.println("Hello from Client");
+            int finalPlayerNo = playerNo;
+            waitingFrame.dispose();
+            SwingUtilities.invokeLater(() -> {
+                Main game = new Main(2, finalPlayerNo, out, in);
+                game.setVisible(true);
+            });
 
         } catch (Exception e) {
             e.printStackTrace();
