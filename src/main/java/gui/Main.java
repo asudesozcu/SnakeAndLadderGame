@@ -50,7 +50,7 @@ public class Main extends JFrame {
         this.out = out;
         this.in = in;
 
-        setTitle("Multiplayer Snakes & Ladders");
+      setTitle("Multiplayer Snakes & Ladders");
         setSize(800, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setLayout(null);
@@ -65,6 +65,7 @@ public class Main extends JFrame {
         lblBoard = new JLabel(new ImageIcon(boardUrl));
         lblBoard.setBounds(50, 30, 600, 600);
         add(lblBoard);
+        lblBoard.setLayout(null);
 
         lblDice = new JLabel();
         lblDice.setBounds(680, 100, 100, 100);
@@ -80,6 +81,7 @@ public class Main extends JFrame {
             btnRoll.setEnabled(false);
         });
 
+        // Create player pieces
         playerPieces = new JLabel[playerCount];
         positions = new int[playerCount];
         for (int i = 0; i < playerCount; i++) {
@@ -89,11 +91,14 @@ public class Main extends JFrame {
                 System.exit(1);
             }
             playerPieces[i] = new JLabel(new ImageIcon(pieceUrl));
-            playerPieces[i].setBounds(50, 630, 40, 40);
+            playerPieces[i].setSize(40, 40);
             lblBoard.add(playerPieces[i]);
             positions[i] = 0;
+            int[] coords = getCoordinates(0);
+            playerPieces[i].setLocation(coords[0] + (i * 10), coords[1] - (i * 10)); // offset for overlapping
         }
 
+        // Listener thread
         Thread listener = new Thread(() -> {
             try {
                 String line;
@@ -103,14 +108,26 @@ public class Main extends JFrame {
                         myTurn = (turn == playerNo);
                         SwingUtilities.invokeLater(() -> btnRoll.setEnabled(myTurn));
                     } else if (line.startsWith("MOVE")) {
-                        int mover = Integer.parseInt(line.split(" ")[1]);
-                        int dice = (int)(Math.random() * 6) + 1;
+    String[] parts = line.split(" ");
+    if (parts.length >= 4) {
+        int mover = Integer.parseInt(parts[1]);
+        int dice = Integer.parseInt(parts[2]);
+        int newPos = Integer.parseInt(parts[3]);
+        positions[mover - 1] = newPos;
+
+        SwingUtilities.invokeLater(() -> {
+            movePlayer(mover - 1, dice);
+            java.net.URL diceUrl = getClass().getResource("/Image/dice " + dice + ".jpg");
+            if (diceUrl != null) {
+                lblDice.setIcon(new ImageIcon(diceUrl));
+            }
+        });
+    }
+}
+ else if (line.startsWith("WINNER")) {
+                        int winner = Integer.parseInt(line.split(" ")[1]);
                         SwingUtilities.invokeLater(() -> {
-                            movePlayer(mover - 1, dice);
-                            java.net.URL diceUrl = getClass().getResource("/Image/dice " + dice + ".jpg");
-                            if (diceUrl != null) {
-                                lblDice.setIcon(new ImageIcon(diceUrl));
-                            }
+                            JOptionPane.showMessageDialog(this, "🎉 Player " + winner + " wins the game!");
                         });
                     }
                 }
@@ -122,24 +139,23 @@ public class Main extends JFrame {
     }
 
     private void movePlayer(int playerIdx, int dice) {
-        positions[playerIdx] += dice;
-        if (positions[playerIdx] > 100) positions[playerIdx] = 100;
+    int[] coords = getCoordinates(positions[playerIdx]);
+    int xOffset = (playerIdx % 2) * 10;
+    int yOffset = (playerIdx / 2) * 10;
+    playerPieces[playerIdx].setLocation(coords[0] + xOffset, coords[1] - yOffset);
+}
 
-        int[] coords = getCoordinates(positions[playerIdx]);
-        playerPieces[playerIdx].setLocation(coords[0], coords[1]);
-
-        if (positions[playerIdx] == 100) {
-            JOptionPane.showMessageDialog(this, "Player " + (playerIdx + 1) + " wins!");
-        }
-    }
 
     private int[] getCoordinates(int pos) {
-        if (pos <= 0) return new int[]{50, 630};
+        if (pos <= 0) return new int[]{0, 540}; // start of board
         int row = (pos - 1) / 10;
         int col = (pos - 1) % 10;
-        if (row % 2 == 1) col = 9 - col;
-        int x = 50 + col * 60;
-        int y = 630 - row * 60;
-        return new int[]{x, y};
+        if (row % 2 == 1) {
+            col = 9 - col; // reverse direction on odd rows
+        }
+        int tileSize = 60;
+        int baseX = col * tileSize + 10;
+        int baseY = 540 - row * tileSize + 10;
+        return new int[]{baseX, baseY};
     }
 }
