@@ -4,6 +4,7 @@
  */
 package Client;
 
+import gui.Login;
 import gui.Main;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -25,14 +26,20 @@ import java.util.logging.Logger;
  * @author sozcu
  */
 public class ClientMain {
-       public static void main(String[] args) {
-      try {
+
+                 
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> new Login().setVisible(true));
+    }
+
+    public static void startConnection() {
+        try {
             Socket socket = new Socket("localhost", 5000);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-            // Always open waiting frame immediately
-            WaitingFrame waiting = new WaitingFrame("Waiting for a match...");
+            WaitingFrame waiting = new WaitingFrame("Welcome! Waiting for a match...");
             SwingUtilities.invokeLater(() -> waiting.setVisible(true));
 
             while (true) {
@@ -54,5 +61,3 @@ public class ClientMain {
         }
     }
 }
-
-
