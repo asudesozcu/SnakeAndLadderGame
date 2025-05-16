@@ -26,35 +26,33 @@ import java.util.logging.Logger;
  */
 public class ClientMain {
        public static void main(String[] args) {
-        try {
-            Socket socket = new Socket("localhost", 5000); // Change to actual IP in deployment
-            PrintWriter out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+      try {
+            Socket socket = new Socket("localhost", 5000);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
-            WaitingFrame waitingFrame = new WaitingFrame();
-            waitingFrame.setVisible(true);
+            // Always open waiting frame immediately
+            WaitingFrame waiting = new WaitingFrame("Waiting for a match...");
+            SwingUtilities.invokeLater(() -> waiting.setVisible(true));
 
-            String msg;
-            int playerNo = -1;
-            while ((msg = in.readLine()) != null) {
-                if (msg.startsWith("WAITING")) {
-                    playerNo = Integer.parseInt(msg.split(" ")[1]);
-                    // Remain on waiting screen until START received
-                } else if (msg.startsWith("START")) {
-                    playerNo = Integer.parseInt(msg.split(" ")[1]);
+            while (true) {
+                String line = in.readLine();
+                if (line == null) break;
+                if (line.startsWith("START")) {
+                    int playerNo = Integer.parseInt(line.split(" ")[1]);
+                    waiting.dispose();
+                    SwingUtilities.invokeLater(() -> new Main(2, playerNo, out, in).setVisible(true));
                     break;
                 }
             }
 
-            int finalPlayerNo = playerNo;
-            waitingFrame.dispose();
+        } catch (IOException e) {
             SwingUtilities.invokeLater(() -> {
-                Main game = new Main(2, finalPlayerNo, out, in);
-                game.setVisible(true);
+                WaitingFrame errorFrame = new WaitingFrame("Could not connect to the server.");
+                errorFrame.setVisible(true);
             });
-
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }
+
+
