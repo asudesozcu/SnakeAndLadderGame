@@ -108,28 +108,38 @@ public class Main extends JFrame {
                         myTurn = (turn == playerNo);
                         SwingUtilities.invokeLater(() -> btnRoll.setEnabled(myTurn));
                     } else if (line.startsWith("MOVE")) {
-    String[] parts = line.split(" ");
-    if (parts.length >= 4) {
-        int mover = Integer.parseInt(parts[1]);
-        int dice = Integer.parseInt(parts[2]);
-        int newPos = Integer.parseInt(parts[3]);
-        positions[mover - 1] = newPos;
-
-        SwingUtilities.invokeLater(() -> {
-            movePlayer(mover - 1, dice);
-            java.net.URL diceUrl = getClass().getResource("/Image/dice " + dice + ".jpg");
-            if (diceUrl != null) {
-                lblDice.setIcon(new ImageIcon(diceUrl));
-            }
-        });
-    }
-}
- else if (line.startsWith("WINNER")) {
-                        int winner = Integer.parseInt(line.split(" ")[1]);
+                        String[] parts = line.split(" ");
+                        int mover = Integer.parseInt(parts[1]);
+                        int dice = Integer.parseInt(parts[2]);
+                        int newPos = Integer.parseInt(parts[3]);
+                        positions[mover - 1] = newPos;
                         SwingUtilities.invokeLater(() -> {
-                            JOptionPane.showMessageDialog(this, "🎉 Player " + winner + " wins the game!");
+                            movePlayer(mover - 1);
+                            lblDice.setIcon(new ImageIcon(getClass().getResource("/Image/dice " + dice + ".jpg")));
                         });
-                    }
+                    } else if (line.startsWith("WINNER")) {
+                        int winner = Integer.parseInt(line.split(" ")[1]);
+                        JOptionPane.showMessageDialog(this, "Player " + winner + " wins!");
+                    } else if (line.startsWith("DISCONNECTED")) {
+    SwingUtilities.invokeLater(() -> {
+        JOptionPane.showMessageDialog(this, "Opponent disconnected. Rejoining matchmaking...");
+        dispose();
+
+        // Şu anki reader/writer'ı da güvenli şekilde kapat:
+        try { in.close(); } catch (Exception ignored) {}
+        try { out.close(); } catch (Exception ignored) {}
+
+        // Ana istemci döngüsünü başlat
+        new Thread(() -> {
+            try {
+                Thread.sleep(100); // pencerenin kapanmasına zaman tanı
+            } catch (InterruptedException ignored) {}
+            Client.ClientMain.main(new String[0]);
+        }).start();
+    });
+    break;
+}
+
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -138,12 +148,14 @@ public class Main extends JFrame {
         listener.start();
     }
 
-    private void movePlayer(int playerIdx, int dice) {
+
+   private void movePlayer(int playerIdx) {
     int[] coords = getCoordinates(positions[playerIdx]);
     int xOffset = (playerIdx % 2) * 10;
     int yOffset = (playerIdx / 2) * 10;
     playerPieces[playerIdx].setLocation(coords[0] + xOffset, coords[1] - yOffset);
 }
+
 
 
     private int[] getCoordinates(int pos) {
