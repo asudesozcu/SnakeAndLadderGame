@@ -44,37 +44,6 @@ public class GameHandler implements Runnable {
         }
     }
 
-    private void handleMove(BufferedReader in, PrintWriter outSelf, PrintWriter outOther, int playerNo) throws IOException {
-        String line = in.readLine();
-        if (line.equals("ROLL") && gameLogic.getCurrentPlayer() == playerNo - 1) {
-            int dice = gameLogic.rollDice();
-            int pos = gameLogic.movePlayer(dice);
-            outSelf.println("MOVE " + playerNo + " " + dice + " " + pos);
-            outOther.println("MOVE " + playerNo + " " + dice + " " + pos);
-
-            if (gameLogic.isWinner(playerNo - 1)) {
-                outSelf.println("WINNER " + playerNo);
-                outOther.println("WINNER " + playerNo);
-            }
-
-            int next = gameLogic.getCurrentPlayer() + 1;
-            outSelf.println("TURN " + next);
-            outOther.println("TURN " + next);
-        }
-    }
-
-    private void tryReconnect(Socket disconnected, Socket opponent) {
-        try {
-            if (!opponent.isClosed()) {
-                PrintWriter out = new PrintWriter(opponent.getOutputStream(), true);
-                out.println("DISCONNECTED");
-            }
-        } catch (IOException ignored) {}
-
-        try { if (!disconnected.isClosed()) disconnected.close(); } catch (IOException ignored) {}
-        try { if (!opponent.isClosed()) opponent.close(); } catch (IOException ignored) {}
-    }
-
     private void listen(Socket socket, int playerNo, PrintWriter outSelf, PrintWriter outOther) {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
             String line;
@@ -86,10 +55,10 @@ public class GameHandler implements Runnable {
                     outSelf.println("MOVE " + playerNo + " " + dice + " " + newPosition);
                     outOther.println("MOVE " + playerNo + " " + dice + " " + newPosition);
 
-                    if (gameLogic.isWinner(playerNo - 1)) {
-                        outSelf.println("WINNER " + playerNo);
-                        outOther.println("WINNER " + playerNo);
-                    }
+                   if (gameLogic.isWinner(playerNo - 1)) {
+    outSelf.println("WINNER " + playerNo);     // Bu oyuncu kazandı
+    outOther.println("GAMEOVER");              // Diğeri kaybetti
+}
 
                     int next = gameLogic.getCurrentPlayer() + 1;
                     outSelf.println("TURN " + next);

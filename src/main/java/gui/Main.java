@@ -49,6 +49,7 @@ private int diceAnimIndex = 0;
     private BufferedReader in;
     private boolean myTurn = false;
     private boolean animating = false;
+private volatile boolean gameEnded = false;
 
     
 
@@ -156,9 +157,10 @@ else if (line.startsWith("MOVE")) {
 }
 
 else if (line.startsWith("WINNER")) {
+     gameEnded = true;
     int winner = Integer.parseInt(line.split(" ")[1]);
     int choice = JOptionPane.showConfirmDialog(this,
-        "Player " + winner + " wins!\nDo you want to play again?",
+        "🎉 You win 🎉 !\nDo you want to play again?",
         "Game Over", JOptionPane.YES_NO_OPTION);
 
     dispose();
@@ -167,31 +169,45 @@ else if (line.startsWith("WINNER")) {
     } else {
         System.exit(0);
     }
-} else if (line.startsWith("DISCONNECTED")) {
-    SwingUtilities.invokeLater(() -> {
-        int result = JOptionPane.showConfirmDialog(
-            this,
-            "Your opponent has disconnected.\nDo you want to search for a new match?",
-            "Disconnected",
-            JOptionPane.YES_NO_OPTION
-        );
+} else if (line.startsWith("GAMEOVER")) {
+    int choice = JOptionPane.showConfirmDialog(
+        this,
+        "Game Over\nDo you want to play again?",
+        "Game Over",
+        JOptionPane.YES_NO_OPTION
+    );
 
+    dispose();
+    if (choice == JOptionPane.YES_OPTION) {
+        new Thread(() -> Client.ClientMain.main(new String[0])).start();
+    } else {
+        System.exit(0);
+    }
+}
+else if (line.startsWith("DISCONNECTED")) {
+    if (!gameEnded) {
         dispose();
 
-        if (result == JOptionPane.YES_OPTION) {
-            new Thread(() -> Client.ClientMain.main(new String[0])).start();
-        } else {
-            JOptionPane.showMessageDialog(null, "You have left the game.");
-            System.exit(0);
-        }
-    });
-    break;
+        SwingUtilities.invokeLater(() -> {
+            int result = JOptionPane.showConfirmDialog(
+                null,
+                "Your opponent has disconnected.\nDo you want to search for a new match?",
+                "Disconnected",
+                JOptionPane.YES_NO_OPTION
+            );
+
+            if (result == JOptionPane.YES_OPTION) {
+                new Thread(() -> Client.ClientMain.main(new String[0])).start();
+            } else {
+                JOptionPane.showMessageDialog(null, "You have left the game.");
+                System.exit(0);
+            }
+        });
+
+        break;
+    }
 }
-
-
-
-
-                }
+         }
             } catch (Exception e) {
                 e.printStackTrace();
             }
