@@ -17,7 +17,7 @@ import logic.GameLogic;
  * @author sozcu
  */
 public class GameHandler implements Runnable {
-   private final Socket player1;
+  private final Socket player1;
     private final Socket player2;
     private final GameLogic gameLogic = new GameLogic(2);
 
@@ -33,8 +33,10 @@ public class GameHandler implements Runnable {
 
             out1.println("START 1");
             out2.println("START 2");
+
+            // Only Player 1 should get the first TURN message
             out1.println("TURN 1");
-            out2.println("TURN 1");
+            System.out.println("[GameHandler] Sent TURN 1 to Player 1");
 
             new Thread(() -> listen(player1, 1, out1, out2)).start();
             new Thread(() -> listen(player2, 2, out2, out1)).start();
@@ -55,14 +57,21 @@ public class GameHandler implements Runnable {
                     outSelf.println("MOVE " + playerNo + " " + dice + " " + newPosition);
                     outOther.println("MOVE " + playerNo + " " + dice + " " + newPosition);
 
-                   if (gameLogic.isWinner(playerNo - 1)) {
-    outSelf.println("WINNER " + playerNo);     // Bu oyuncu kazandı
-    outOther.println("GAMEOVER");              // Diğeri kaybetti
-}
+                    if (gameLogic.isWinner(playerNo - 1)) {
+                        outSelf.println("WINNER " + playerNo);
+                        outOther.println("GAMEOVER");
+                    }
 
                     int next = gameLogic.getCurrentPlayer() + 1;
                     outSelf.println("TURN " + next);
                     outOther.println("TURN " + next);
+
+                    System.out.println("[GameHandler] Sent TURN " + next + " to both players");
+
+                } else if (line.startsWith("PAWN")) {
+                    int pawn = Integer.parseInt(line.split(" ")[1]);
+                    outOther.println("PAWN_TAKEN " + pawn);
+                    System.out.println("[GameHandler] Player " + playerNo + " selected pawn " + pawn);
                 }
             }
 
@@ -82,6 +91,8 @@ public class GameHandler implements Runnable {
             }
         }
 
-        try { socket.close(); } catch (IOException ignored) {}
+        try {
+            socket.close();
+        } catch (IOException ignored) {}
     }
 }
