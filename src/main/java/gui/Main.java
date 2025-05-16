@@ -30,9 +30,14 @@ import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import javax.swing.Timer;
 import logic.GameLogic;
 
 public class Main extends JFrame {
+    private JLabel lblTurn;
+private Timer diceAnimationTimer;
+private int[] diceFrames = {1, 2, 3, 4, 5, 6};
+private int diceAnimIndex = 0;
      private JLabel lblBoard;
     private JLabel lblDice;
     private JButton btnRoll;
@@ -43,6 +48,9 @@ public class Main extends JFrame {
     private PrintWriter out;
     private BufferedReader in;
     private boolean myTurn = false;
+    private boolean animating = false;
+
+    
 
     public Main(int playerCount, int playerNo, PrintWriter out, BufferedReader in) {
         this.playerCount = playerCount;
@@ -70,7 +78,13 @@ public class Main extends JFrame {
         lblDice = new JLabel();
         lblDice.setBounds(680, 100, 100, 100);
         add(lblDice);
+lblTurn = new JLabel("Waiting for your turn...", SwingConstants.CENTER);
+lblTurn.setBounds(650, 20, 130, 30);
+lblTurn.setFont(new Font("Arial", Font.BOLD, 12));
+lblTurn.setForeground(Color.DARK_GRAY);
+add(lblTurn);
 
+lblDice.setIcon(new ImageIcon(getClass().getResource("/Image/dice 1.jpg"))); // default zar
         btnRoll = new JButton("Roll Dice");
         btnRoll.setBounds(670, 220, 120, 40);
         btnRoll.setEnabled(false);
@@ -103,21 +117,45 @@ public class Main extends JFrame {
             try {
                 String line;
                 while ((line = in.readLine()) != null) {
-                    if (line.startsWith("TURN")) {
-                        int turn = Integer.parseInt(line.split(" ")[1]);
-                        myTurn = (turn == playerNo);
-                        SwingUtilities.invokeLater(() -> btnRoll.setEnabled(myTurn));
-                    } else if (line.startsWith("MOVE")) {
-                        String[] parts = line.split(" ");
-                        int mover = Integer.parseInt(parts[1]);
-                        int dice = Integer.parseInt(parts[2]);
-                        int newPos = Integer.parseInt(parts[3]);
-                        positions[mover - 1] = newPos;
-                        SwingUtilities.invokeLater(() -> {
-                            movePlayer(mover - 1);
-                            lblDice.setIcon(new ImageIcon(getClass().getResource("/Image/dice " + dice + ".jpg")));
-                        });
-                    } else if (line.startsWith("WINNER")) {
+            if (line.startsWith("TURN")) {
+    int turn = Integer.parseInt(line.split(" ")[1]);
+    myTurn = (turn == playerNo);
+
+    SwingUtilities.invokeLater(() -> {
+        if (!animating) {
+            btnRoll.setEnabled(myTurn);
+            updateTurnLabel(myTurn);
+        } else {
+            // Zar animasyonu bitince bekleyip sonra aktifleştir
+           Timer waitForAnim = new Timer(200, null);
+waitForAnim.addActionListener(ev -> {
+    if (!animating) {
+        btnRoll.setEnabled(myTurn);
+        updateTurnLabel(myTurn);
+        waitForAnim.stop();
+    }
+});
+waitForAnim.start();
+
+        }
+    });
+}
+
+else if (line.startsWith("MOVE")) {
+    String[] parts = line.split(" ");
+    int mover = Integer.parseInt(parts[1]);
+    int dice = Integer.parseInt(parts[2]);
+    int newPos = Integer.parseInt(parts[3]);
+    positions[mover - 1] = newPos;
+
+    SwingUtilities.invokeLater(() -> {
+        startDiceAnimation(dice, () -> {
+            movePlayer(mover - 1);
+        });
+    });
+}
+
+else if (line.startsWith("WINNER")) {
     int winner = Integer.parseInt(line.split(" ")[1]);
     int choice = JOptionPane.showConfirmDialog(this,
         "Player " + winner + " wins!\nDo you want to play again?",
@@ -183,4 +221,44 @@ public class Main extends JFrame {
         int baseY = 540 - row * tileSize + 10;
         return new int[]{baseX, baseY};
     }
+    
+   private void startDiceAnimation(int finalValue, Runnable onComplete) {
+    animating = true; // animasyon başladı
+
+    diceAnimIndex = 0;
+
+    if (diceAnimationTimer != null && diceAnimationTimer.isRunning()) {
+        diceAnimationTimer.stop();
+    }
+
+    diceAnimationTimer = new Timer(50, e -> {
+        int frame = diceFrames[diceAnimIndex % diceFrames.length];
+        lblDice.setIcon(new ImageIcon(getClass().getResource("/Image/dice " + frame + ".jpg")));
+        diceAnimIndex++;
+
+        if (diceAnimIndex >= 6) {
+            diceAnimationTimer.stop();
+            lblDice.setIcon(new ImageIcon(getClass().getResource("/Image/dice " + finalValue + ".jpg")));
+
+            animating = false; // animasyon bitti
+            if (onComplete != null) {
+                onComplete.run();
+            }
+        }
+    });
+
+    diceAnimationTimer.start();
+}
+
+
+private void updateTurnLabel(boolean yourTurn) {
+    if (yourTurn) {
+        lblTurn.setText("Your Turn!");
+        lblTurn.setForeground(new Color(0, 128, 0));
+    } else {
+        lblTurn.setText("Opponent’s Turn...");
+        lblTurn.setForeground(Color.RED);
+    }
+}
+
 }
