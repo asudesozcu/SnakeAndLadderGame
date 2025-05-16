@@ -17,7 +17,7 @@ import logic.GameLogic;
  * @author sozcu
  */
 public class GameHandler implements Runnable {
-    private final Socket player1;
+   private final Socket player1;
     private final Socket player2;
     private final GameLogic gameLogic = new GameLogic(2);
 
@@ -26,32 +26,23 @@ public class GameHandler implements Runnable {
         this.player2 = p2;
     }
 
-   public void run() {
-    try {
-        if (player1.isClosed() || player2.isClosed()) {
-            System.out.println("One of the sockets is already closed. Skipping game start.");
-            return;
+    public void run() {
+        try {
+            PrintWriter out1 = new PrintWriter(player1.getOutputStream(), true);
+            PrintWriter out2 = new PrintWriter(player2.getOutputStream(), true);
+
+            out1.println("START 1");
+            out2.println("START 2");
+            out1.println("TURN 1");
+            out2.println("TURN 1");
+
+            new Thread(() -> listen(player1, 1, out1, out2)).start();
+            new Thread(() -> listen(player2, 2, out2, out1)).start();
+
+        } catch (IOException e) {
+            System.out.println("Error sending START message.");
         }
-
-        PrintWriter out1 = new PrintWriter(player1.getOutputStream(), true);
-        PrintWriter out2 = new PrintWriter(player2.getOutputStream(), true);
-
-        out1.println("START 1");
-        out2.println("START 2");
-        out1.println("TURN 1");
-        out2.println("TURN 1");
-
-        new Thread(() -> listen(player1, 1, out1, out2)).start();
-        new Thread(() -> listen(player2, 2, out2, out1)).start();
-
-    } catch (IOException e) {
-        System.out.println("Error sending START message.");
-        // Eğer hata olursa her iki oyuncuyu da sıraya geri al
-        ServerMain.returnToQueue(player1);
-        ServerMain.returnToQueue(player2);
     }
-}
-
 
     private void handleMove(BufferedReader in, PrintWriter outSelf, PrintWriter outOther, int playerNo) throws IOException {
         String line = in.readLine();
@@ -77,7 +68,6 @@ public class GameHandler implements Runnable {
             if (!opponent.isClosed()) {
                 PrintWriter out = new PrintWriter(opponent.getOutputStream(), true);
                 out.println("DISCONNECTED");
-                ServerMain.returnToQueue(opponent);
             }
         } catch (IOException ignored) {}
 
@@ -107,14 +97,12 @@ public class GameHandler implements Runnable {
                 }
             }
 
-            // oyuncu ayrıldıysa buraya gelir
             System.out.println("Player " + playerNo + " disconnected.");
             try {
                 outOther.println("DISCONNECTED");
             } catch (Exception ex) {
                 System.out.println("Error sending DISCONNECTED: " + ex.getMessage());
             }
-            ServerMain.returnToQueue(socket == player1 ? player2 : player1);
 
         } catch (IOException e) {
             System.out.println("Connection lost with player " + playerNo);
@@ -123,7 +111,6 @@ public class GameHandler implements Runnable {
             } catch (Exception ex) {
                 System.out.println("Error notifying opponent: " + ex.getMessage());
             }
-            ServerMain.returnToQueue(socket == player1 ? player2 : player1);
         }
 
         try { socket.close(); } catch (IOException ignored) {}

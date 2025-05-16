@@ -118,27 +118,40 @@ public class Main extends JFrame {
                             lblDice.setIcon(new ImageIcon(getClass().getResource("/Image/dice " + dice + ".jpg")));
                         });
                     } else if (line.startsWith("WINNER")) {
-                        int winner = Integer.parseInt(line.split(" ")[1]);
-                        JOptionPane.showMessageDialog(this, "Player " + winner + " wins!");
-                    } else if (line.startsWith("DISCONNECTED")) {
+    int winner = Integer.parseInt(line.split(" ")[1]);
+    int choice = JOptionPane.showConfirmDialog(this,
+        "Player " + winner + " wins!\nDo you want to play again?",
+        "Game Over", JOptionPane.YES_NO_OPTION);
+
+    dispose();
+    if (choice == JOptionPane.YES_OPTION) {
+        new Thread(() -> Client.ClientMain.main(new String[0])).start();
+    } else {
+        System.exit(0);
+    }
+} else if (line.startsWith("DISCONNECTED")) {
     SwingUtilities.invokeLater(() -> {
-        JOptionPane.showMessageDialog(this, "Opponent disconnected. Rejoining matchmaking...");
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "Your opponent has disconnected.\nDo you want to search for a new match?",
+            "Disconnected",
+            JOptionPane.YES_NO_OPTION
+        );
+
         dispose();
 
-        // Şu anki reader/writer'ı da güvenli şekilde kapat:
-        try { in.close(); } catch (Exception ignored) {}
-        try { out.close(); } catch (Exception ignored) {}
-
-        // Ana istemci döngüsünü başlat
-        new Thread(() -> {
-            try {
-                Thread.sleep(100); // pencerenin kapanmasına zaman tanı
-            } catch (InterruptedException ignored) {}
-            Client.ClientMain.main(new String[0]);
-        }).start();
+        if (result == JOptionPane.YES_OPTION) {
+            new Thread(() -> Client.ClientMain.main(new String[0])).start();
+        } else {
+            JOptionPane.showMessageDialog(null, "You have left the game.");
+            System.exit(0);
+        }
     });
     break;
 }
+
+
+
 
                 }
             } catch (Exception e) {
