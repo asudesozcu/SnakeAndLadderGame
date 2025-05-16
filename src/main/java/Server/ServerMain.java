@@ -3,7 +3,6 @@ package Server;
 import java.net.*;
 import java.io.*;
 import java.util.*;
-import logic.GameLogic;
 
 public class ServerMain {
      private static final int PORT = 5000;
@@ -29,17 +28,4 @@ public class ServerMain {
             e.printStackTrace();
         }
     }
-
-  public static void returnToQueue(Socket socket) {
-    if (socket == null || socket.isClosed()) return; // geçersiz soketle uğraşma
-    synchronized (waitingQueue) {
-        waitingQueue.offer(socket);
-        if (waitingQueue.size() >= 2) {
-            Socket p1 = waitingQueue.poll();
-            Socket p2 = waitingQueue.poll();
-            new Thread(new GameHandler(p1, p2)).start();
-        }
-    }
-}
-
 }

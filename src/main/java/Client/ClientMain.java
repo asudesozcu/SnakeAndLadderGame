@@ -5,25 +5,14 @@
 package Client;
 
 import gui.Login;
-import gui.Main;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
 import java.io.PrintWriter;
-import java.net.Socket;
 import javax.swing.SwingUtilities;
 import gui.Main;
-import gui.PawnSelection;
 import gui.WaitingFrame;
-
-import javax.swing.*;
-import java.io.*;
 import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 /**
  *
  * @author sozcu

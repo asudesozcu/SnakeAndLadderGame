@@ -1,38 +1,18 @@
 package gui;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.Toolkit;
-import java.util.Random;
 
-import javax.swing.AbstractAction;
+import java.awt.Font;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
 import javax.swing.SwingUtilities;
-
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.JButton;
-import javax.swing.JComponent;
-
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.ActionEvent;
-import javax.swing.JTextField;
-import javax.swing.KeyStroke;
 import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
-import java.net.Socket;
-import java.util.HashSet;
-import java.util.Set;
 import javax.swing.Timer;
-import logic.GameLogic;
 
 public class Main extends JFrame {
    private JLabel lblTurn;
@@ -102,7 +82,7 @@ private boolean pawnSelected = false;
             lblBoard.add(playerPieces[i]);
             positions[i] = 0;
             int[] coords = getCoordinates(0);
-            playerPieces[i].setLocation(coords[0] + (i * 10), coords[1] - (i * 10));
+            playerPieces[i].setLocation(coords[0] + (i * 10), coords[1] - (i * 10)); //üst üste binmesin
         }
 
         // Pawn seçimi
