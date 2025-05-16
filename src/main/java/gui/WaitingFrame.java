@@ -9,22 +9,51 @@ package gui;
  *
  * @author sozcu
  */
-import Client.ClientMain;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+
+
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 
 
 
 public class WaitingFrame extends JFrame {
-   public WaitingFrame(String message) {
-        setTitle("Waiting Room");
-        setSize(300, 150);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+   private JLabel loadingLabel;
+    private JLabel nameLabel;
+    private ImageIcon rawIcon;
 
-        JLabel label = new JLabel(message, SwingConstants.CENTER);
-        label.setFont(new Font("Arial", Font.PLAIN, 14));
-        add(label);
+    public WaitingFrame(String message) {
+setLayout(null);
+getContentPane().setBackground(Color.WHITE);
+        setTitle("Waiting for Opponent");
+        setSize(600, 600);
+        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        // Üstteki yazı
+        nameLabel = new JLabel( message , SwingConstants.CENTER);
+        nameLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        nameLabel.setBounds(0, 0, getWidth(), 40);
+      nameLabel.setBackground(Color.WHITE);
+
+        add(nameLabel);
+
+        // GIF label
+        rawIcon = new ImageIcon(getClass().getResource("/Image/loading.gif")); 
+        loadingLabel = new JLabel(rawIcon);
+        loadingLabel.setBounds(0, 40, getWidth(), getHeight() - 40);
+       loadingLabel.setOpaque(true);
+loadingLabel.setBackground(Color.WHITE);
+        add(loadingLabel);
+
+        // Yeniden boyutlanınca GIF ayarla
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                nameLabel.setBounds(0, 0, getWidth(), 40);
+                loadingLabel.setBounds(0, 40, getWidth(), getHeight() - 40);
+            }
+        });
     }
 }
