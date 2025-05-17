@@ -13,47 +13,33 @@ import java.awt.event.ActionListener;
  * @author sozcu
  */
 public class PawnSelection extends JDialog {
-  private int selectedPawn = -1;
+    private int selectedPawn = -1;
 
-   public PawnSelection(JFrame parent, int disabledPawn, ActionListener onPawnSelected) {
-    super(parent, "Select Your Pawn", true);
-    System.out.println("[PawnSelection] NEW DIALOG OPENED");
+    public PawnSelection(JFrame parent, int disabledPawn, java.awt.event.ActionListener onSelect) {
+        super(parent, "Select Your Pawn", true);
         setSize(500, 250);
         setLocationRelativeTo(parent);
         setLayout(new BorderLayout());
-
-        JPanel panel = new JPanel(new FlowLayout());
-        panel.setBackground(new Color(0, 0, 0, 0)); // şeffaf arka plan
 
         JLabel label = new JLabel("SELECT YOUR COLOUR");
         label.setHorizontalAlignment(SwingConstants.CENTER);
         label.setFont(new Font("Arial", Font.BOLD, 22));
         add(label, BorderLayout.NORTH);
 
+        JPanel panel = new JPanel(new FlowLayout());
         for (int i = 1; i <= 6; i++) {
-            if (i == disabledPawn) continue; // rakibin seçtiği piyon görünmesin
-
+            if (i == disabledPawn) continue;
             int pawn = i;
             ImageIcon icon = new ImageIcon(getClass().getResource("/Image/player " + pawn + ".png"));
             JButton btn = new JButton(icon);
             btn.setPreferredSize(new Dimension(60, 60));
-
-           btn.addActionListener(e -> {
-    System.out.println("[PawnSelection] Pawn " + pawn + " clicked");
-    selectedPawn = pawn;
-    try {
-        onPawnSelected.actionPerformed(new ActionEvent(PawnSelection.this, ActionEvent.ACTION_PERFORMED, "pawn"));
-        System.out.println("[PawnSelection] actionPerformed executed");
-    } catch (Exception ex) {
-        System.err.println("[PawnSelection] Error in actionPerformed: " + ex.getMessage());
-    }
-    dispose();
-    System.out.println("[PawnSelection] Dialog disposed");
-});
-
+            btn.addActionListener(e -> {
+                selectedPawn = pawn;
+                onSelect.actionPerformed(e);
+                dispose();
+            });
             panel.add(btn);
         }
-
         add(panel, BorderLayout.CENTER);
         setUndecorated(true);
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.ORANGE, 4, true));
