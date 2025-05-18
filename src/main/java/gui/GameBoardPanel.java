@@ -51,24 +51,17 @@ public class GameBoardPanel extends JPanel {
     public void setPieceIcon(int index, Icon icon) {
         pieces[index].setIcon(icon);
     }
+    
 
-  public void setPiecePosition(int index, int pos) {
-    try {
-        System.out.println("[GameBoard] Rolled to: " + pos);
-        int finalPos = snakesAndLadders.getOrDefault(pos, pos);
-        if (finalPos != pos) {
-            String type = (finalPos < pos) ? "Snake 🐍" : "Ladder 🪜";
-            System.out.println("[GameBoard] " + type + " activated: " + pos + " → " + finalPos);
-        }
-
-        positions[index] = finalPos;
-        int[] c = getCoordinates(finalPos);
-        pieces[index].setLocation(c[0] + (index * 10), c[1] - (index * 10));
-    } catch (Exception ex) {
-        System.err.println("[GameBoard] Error: " + ex.getMessage());
-        ex.printStackTrace();
-    }
+ public void setPiecePosition(int index, int pos) {
+    // Bu sadece konumu ayarlar, snake/ladder'ı burada kontrol etme!
+    positions[index] = pos;
+    int[] c = getCoordinates(pos);
+    int xOffset = (index % 2) * 10;
+    int yOffset = (index / 2) * 10;
+    pieces[index].setLocation(c[0] + xOffset, c[1] - yOffset);
 }
+
 
 
 
@@ -103,4 +96,49 @@ public class GameBoardPanel extends JPanel {
 
         return map;
     }
+    
+ public void animatePiecePosition(int index, int start, int end) {
+    new Thread(() -> {
+        int step = (end > start) ? 1 : -1;
+
+        // 🔁 1. Yavaş yavaş end pozisyonuna ilerle
+        for (int pos = start + step; pos != end + step; pos += step) {
+            setPiecePosition(index, pos);
+            try {
+                Thread.sleep(150); // animasyon süresi
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+
+        // 🎯 2. End'e tam olarak ulaştıktan sonra pozisyonu yaz
+        positions[index] = end;
+
+        // 🐍 3. Eğer end bir snake veya ladder başıysa → şimdi zıpla
+        if (snakesAndLadders.containsKey(end)) {
+            int jumpTo = snakesAndLadders.get(end);
+
+            System.out.println("[GameBoard] Snake/Ladder triggered: " + end + " → " + jumpTo);
+
+            try {
+                Thread.sleep(300); // kısa duraklama efekti
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+
+            // çapraz zıplama
+            int[] coords = getCoordinates(jumpTo);
+            SwingUtilities.invokeLater(() -> pieces[index].setLocation(coords[0], coords[1]));
+
+            positions[index] = jumpTo;
+        }
+
+    }).start();
+}
+
+
+        public int getCurrentPosition(int index) {
+    return positions[index];
+}
+
 } 

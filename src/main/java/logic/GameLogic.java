@@ -14,6 +14,13 @@ import java.util.Random;
  * @author sozcu
  */
 
+// piyon hareket animasyon eklemeleri yapılsın. 
+//yılan yeme anımasyonu
+//ana sayfa için arka plan
+//zar fotosu değişsin
+
+
+
 public class GameLogic {
    private final int[] positions;
     private int currentPlayer;
@@ -49,19 +56,12 @@ public class GameLogic {
 public int movePlayer(int dice) {
     positions[currentPlayer] += dice;
 
-    // ✅ Snake/Ladder uygulanıyor
-    int original = positions[currentPlayer];
-    positions[currentPlayer] = snakesAndLadders.getOrDefault(original, original);
+    int landed = positions[currentPlayer]; 
 
-    int newPos = positions[currentPlayer];
-
-    System.out.println("[Server] Player " + currentPlayer + " rolled " + dice + " → moved to " + original);
-    if (newPos != original) {
-        System.out.println("[Server] Snake or ladder triggered: " + original + " → " + newPos);
-    }
+    System.out.println("[Server] Player " + currentPlayer + " rolled " + dice + " → landed on " + landed);
 
     currentPlayer = (currentPlayer + 1) % positions.length;
-    return newPos;
+    return landed; 
 }
 
 private Map<Integer, Integer> initializeSnakesAndLadders() {

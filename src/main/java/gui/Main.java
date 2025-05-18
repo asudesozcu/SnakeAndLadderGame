@@ -89,9 +89,15 @@ public class Main extends JFrame implements GameMessageListener {
         btnRoll.setEnabled(myTurn);
     }
 
-    public void onMove(int player, int dice, int position) {
-        DiceAnimator.animate(lblDice, dice, () -> gameBoard.setPiecePosition(player - 1, position));
-    }
+    @Override
+public void onMove(int player, int dice, int position) {
+    int playerIndex = player - 1;
+    int current = gameBoard.getCurrentPosition(playerIndex); 
+    DiceAnimator.animate(lblDice, dice, () -> 
+        gameBoard.animatePiecePosition(playerIndex, current, position)
+    );
+}
+
 
     public void onPawnTaken(int pawnId) {
         int opponent = (playerNo == 1) ? 1 : 0;
@@ -140,4 +146,7 @@ public class Main extends JFrame implements GameMessageListener {
         });}
        
     }
+
+    
+
 }
