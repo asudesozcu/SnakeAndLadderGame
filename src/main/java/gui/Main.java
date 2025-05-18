@@ -10,6 +10,8 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.JButton;
 import java.awt.Color;
+import javax.swing.*;
+import java.awt.*;
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import javax.swing.Timer;
@@ -36,9 +38,22 @@ public class Main extends JFrame implements GameMessageListener {
         setTitle("Multiplayer Snakes & Ladders");
         setSize(800, 700);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(null);
         setResizable(false);
 
+ ImageIcon bgIcon = new ImageIcon(getClass().getResource("/Image/background.png"));
+Image bgImage = bgIcon.getImage().getScaledInstance(800, 700, Image.SCALE_SMOOTH);
+
+JPanel bgPanel = new JPanel() {
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
+    }
+};
+bgPanel.setLayout(null);
+setContentPane(bgPanel);
+
+        
         gameBoard = new GameBoardPanel(playerCount);
         add(gameBoard);
 

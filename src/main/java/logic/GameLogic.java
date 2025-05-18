@@ -14,9 +14,6 @@ import java.util.Random;
  * @author sozcu
  */
 
-// piyon hareket animasyon eklemeleri yapılsın. 
-//yılan yeme anımasyonu
-//ana sayfa için arka plan
 //zar fotosu değişsin
 
 
