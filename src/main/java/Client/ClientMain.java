@@ -18,13 +18,13 @@ import java.net.Socket;
  * @author sozcu
  */
 public class ClientMain {
-public static void main(String[] args) {
+   public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> new Login().setVisible(true));
     }
 
     public static void startConnection() {
         try {
-            Socket socket = new Socket("localhost", 5000);
+            Socket socket = new Socket("51.20.104.21", 5000);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
@@ -40,6 +40,8 @@ public static void main(String[] args) {
                 String line = in.readLine();
                 if (line == null) break;
 
+                System.out.println("[Client] Received: " + line);
+
                 if (line.startsWith("START")) {
                     String[] parts = line.split(" ");
                     playerNo = Integer.parseInt(parts[1]);
@@ -48,15 +50,18 @@ public static void main(String[] args) {
                     if (parts.length == 4 && parts[2].equals("PAWN_TAKEN")) {
                         takenPawn = Integer.parseInt(parts[3]);
                         pawnReceived = true;
+                        System.out.println("[Client] Pawn received in START message: " + takenPawn);
                     }
                 } else if (line.startsWith("PAWN_TAKEN")) {
                     takenPawn = Integer.parseInt(line.split(" ")[1]);
                     pawnReceived = true;
+                    System.out.println("[Client] Pawn received: " + takenPawn);
                 }
 
-                if ((playerNo == 1 && startReceived) || (playerNo == 2 && startReceived && pawnReceived)) {
+                if (startReceived && (playerNo == 1 || (playerNo == 2 && pawnReceived))) {
                     int finalPlayerNo = playerNo;
                     int finalTakenPawn = takenPawn;
+
                     SwingUtilities.invokeLater(() -> {
                         waiting.dispose();
                         new Main(2, finalPlayerNo, out, in, finalTakenPawn).setVisible(true);
@@ -65,7 +70,7 @@ public static void main(String[] args) {
                 }
             }
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             SwingUtilities.invokeLater(() -> {
                 WaitingFrame errorFrame = new WaitingFrame("Could not connect to the server.");
                 errorFrame.setVisible(true);
