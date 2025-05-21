@@ -19,12 +19,12 @@ import network.GameMessageListener;
 import network.GameNetworkHandler;
 
 public class Main extends JFrame implements GameMessageListener {
-  private JLabel lblTurn;
+ private JLabel lblTurn;
     private JButton btnRoll;
     private JLabel lblDice;
     private GameBoardPanel gameBoard;
     private GameNetworkHandler networkHandler;
-     private boolean gameEnded = false;
+    private boolean gameEnded = false;
 
     private final int playerNo;
     private final PrintWriter out;
@@ -40,20 +40,19 @@ public class Main extends JFrame implements GameMessageListener {
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
 
- ImageIcon bgIcon = new ImageIcon(getClass().getResource("/Image/background.png"));
-Image bgImage = bgIcon.getImage().getScaledInstance(800, 700, Image.SCALE_SMOOTH);
+        ImageIcon bgIcon = new ImageIcon(getClass().getResource("/Image/background.png"));
+        Image bgImage = bgIcon.getImage().getScaledInstance(800, 700, Image.SCALE_SMOOTH);
 
-JPanel bgPanel = new JPanel() {
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
-        g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
-    }
-};
-bgPanel.setLayout(null);
-setContentPane(bgPanel);
+        JPanel bgPanel = new JPanel() {
+            @Override
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                g.drawImage(bgImage, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
+        bgPanel.setLayout(null);
+        setContentPane(bgPanel);
 
-        
         gameBoard = new GameBoardPanel(playerCount);
         add(gameBoard);
 
@@ -105,14 +104,13 @@ setContentPane(bgPanel);
     }
 
     @Override
-public void onMove(int player, int dice, int position) {
-    int playerIndex = player - 1;
-    int current = gameBoard.getCurrentPosition(playerIndex); 
-    DiceAnimator.animate(lblDice, dice, () -> 
-        gameBoard.animatePiecePosition(playerIndex, current, position)
-    );
-}
-
+    public void onMove(int player, int dice, int position) {
+        int playerIndex = player - 1;
+        int current = gameBoard.getCurrentPosition(playerIndex);
+        DiceAnimator.animate(lblDice, dice, () ->
+                gameBoard.animatePiecePosition(playerIndex, current, position)
+        );
+    }
 
     public void onPawnTaken(int pawnId) {
         int opponent = (playerNo == 1) ? 1 : 0;
@@ -120,7 +118,7 @@ public void onMove(int player, int dice, int position) {
     }
 
     public void onWin() {
-        gameEnded=true;
+        gameEnded = true;
         int choice = JOptionPane.showConfirmDialog(this,
                 "🎉 You win 🎉 !\nDo you want to play again?",
                 "Game Over", JOptionPane.YES_NO_OPTION);
@@ -145,23 +143,21 @@ public void onMove(int player, int dice, int position) {
     }
 
     public void onDisconnected() {
-         if (!gameEnded) { dispose();
-        SwingUtilities.invokeLater(() -> {
-            int result = JOptionPane.showConfirmDialog(
-                    null,
-                    "Your opponent has disconnected.\nDo you want to search for a new match?",
-                    "Disconnected",
-                    JOptionPane.YES_NO_OPTION);
-            if (result == JOptionPane.YES_OPTION) {
-                new Thread(() -> Client.ClientMain.main(new String[0])).start();
-            } else {
-                JOptionPane.showMessageDialog(null, "You have left the game.");
-                System.exit(0);
-            }
-        });}
-       
+        if (!gameEnded) {
+            dispose();
+            SwingUtilities.invokeLater(() -> {
+                int result = JOptionPane.showConfirmDialog(
+                        null,
+                        "Your opponent has disconnected.\nDo you want to search for a new match?",
+                        "Disconnected",
+                        JOptionPane.YES_NO_OPTION);
+                if (result == JOptionPane.YES_OPTION) {
+                    new Thread(() -> Client.ClientMain.main(new String[0])).start();
+                } else {
+                    JOptionPane.showMessageDialog(null, "You have left the game.");
+                    System.exit(0);
+                }
+            });
+        }
     }
-
-    
-
 }

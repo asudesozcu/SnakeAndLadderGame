@@ -13,9 +13,9 @@ import java.awt.event.ActionListener;
  * @author sozcu
  */
 public class PawnSelection extends JDialog {
-    private int selectedPawn = -1;
+  private int selectedPawn = -1;
 
-    public PawnSelection(JFrame parent, int disabledPawn, java.awt.event.ActionListener onSelect) {
+    public PawnSelection(JFrame parent, int disabledPawn, ActionListener onSelect) {
         super(parent, "Select Your Pawn", true);
         setSize(500, 250);
         setLocationRelativeTo(parent);
@@ -41,6 +41,7 @@ public class PawnSelection extends JDialog {
             panel.add(btn);
         }
         add(panel, BorderLayout.CENTER);
+
         setUndecorated(true);
         getRootPane().setBorder(BorderFactory.createLineBorder(Color.ORANGE, 4, true));
         setVisible(true);

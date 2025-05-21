@@ -25,6 +25,8 @@ public class GameNetworkHandler implements Runnable {
         try {
             String line;
             while ((line = in.readLine()) != null) {
+                    System.out.println("[GameNetworkHandler] Received: " + line);
+
                 if (line.startsWith("TURN")) {
                     int current = Integer.parseInt(line.split(" ")[1]);
                     listener.onTurn(current);

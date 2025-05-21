@@ -22,6 +22,7 @@ public class GameLogic {
    private final int[] positions;
     private int currentPlayer;
     private final Random rand;
+    private final Map<Integer, Integer> snakesAndLadders = initializeSnakesAndLadders();
 
 
     public GameLogic(int playerCount) {
@@ -48,18 +49,26 @@ public class GameLogic {
     public int getPlayerPosition(int index) {
         return positions[index];
     }
-    private final Map<Integer, Integer> snakesAndLadders = initializeSnakesAndLadders();
 
 public int movePlayer(int dice) {
     positions[currentPlayer] += dice;
+    int pos = positions[currentPlayer];
 
-    int landed = positions[currentPlayer]; 
+    System.out.println("[Server] Player " + currentPlayer + " rolled " + dice + " → landed on " + pos);
 
-    System.out.println("[Server] Player " + currentPlayer + " rolled " + dice + " → landed on " + landed);
+    // Eğer yılan veya merdivene denk geldiyse yeni pozisyona güncelle
+    if (snakesAndLadders.containsKey(pos)) {
+        int oldPos = pos;
+        pos = snakesAndLadders.get(pos);
+        System.out.println("[Server] Player " + currentPlayer + " moved from " + oldPos + " to " + pos + " via snake or ladder.");
+    }
+
+    positions[currentPlayer] = pos;
 
     currentPlayer = (currentPlayer + 1) % positions.length;
-    return landed; 
+    return pos;
 }
+
 
 private Map<Integer, Integer> initializeSnakesAndLadders() {
     Map<Integer, Integer> map = new HashMap<>();
